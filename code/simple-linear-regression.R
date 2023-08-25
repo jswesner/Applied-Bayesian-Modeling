@@ -11,7 +11,8 @@ dat = mtcars
 # 3) plot data
 mtcars %>%
   ggplot(aes(x = hp, y = mpg)) +
-  geom_point()
+  geom_point() +
+  geom_smooth(method = "lm")
 
 # 4) standardize data
 dat_s = dat %>%
