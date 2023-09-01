@@ -17,12 +17,21 @@ mtcars %>%
 # 4) standardize data
 dat_s = dat %>%
   mutate(hp_s = (hp - mean(hp))/sd(hp),
-         mpg_10 = mpg/10)
+         mpg_10 = mpg/10,
+         gear = as.factor(gear),
+         names = case_when(gear == "3" ~ "siri",
+                           gear == "4" ~ "alexa",
+                           gear == "5" ~ "eva"))
+
+dat_s %>%
+  ggplot(aes(x = hp_s, y = mpg_10, color = gear)) +
+  geom_point() +
+  geom_smooth(method = "lm")
 
 # 5) fit a model
 fit1 = brm(mpg_10 ~ hp_s,
            data = dat_s,
-           family = gaussian(),
+           family = gaussian(),   # specify the likelihood
            chains = 2,
            iter = 1000,
            file = "models/fit1.rds",
@@ -32,7 +41,21 @@ fit1 = brm(mpg_10 ~ hp_s,
 conditional_effects(fit1)
 plot(conditional_effects(fit1), points = T)
 
+# 7) Fit an interaction model
+fit5 = brm(mpg_10 ~ hp_s*gear,  # interaction between hp and gear
+           data = dat_s,
+           family = gaussian(),   # specify the likelihood
+           chains = 2,
+           iter = 1000,
+           file = "models/fit5.rds",
+           file_refit = "on_change")
 
+# 8) refit the interaction model with different names for the gears
+fit6 = update(fit5, newdata = dat_s,
+              formula = . ~ hp_s*names)
+
+# 9) View prediction intervals
+conditional_effects(fit6, method = "predict")
 
 # Different likelihood ----------------------------------------------------
 
