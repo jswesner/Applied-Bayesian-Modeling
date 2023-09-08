@@ -1,5 +1,5 @@
 # Simple linear regression with brms
-
+# edited
 # 1) load packages
 library(tidyverse)
 library(tidybayes)
