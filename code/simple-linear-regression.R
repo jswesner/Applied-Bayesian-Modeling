@@ -1,5 +1,5 @@
 # Simple linear regression with brms
-# edited
+
 # 1) load packages
 library(tidyverse)
 library(tidybayes)
@@ -10,8 +10,9 @@ dat = mtcars
 
 # 3) plot data
 mtcars %>%
-  ggplot(aes(x = hp, y = mpg)) +
+  ggplot(aes(x = hp, y = mpg, color = as.factor(gear))) +
   geom_point() +
+  facet_wrap(~as.factor(cyl), scales = "free")+
   geom_smooth(method = "lm")
 
 # 4) standardize data
@@ -26,7 +27,7 @@ dat_s = dat %>%
 dat_s %>%
   ggplot(aes(x = hp_s, y = mpg_10, color = gear)) +
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "loess")
 
 # 5) fit a model
 fit1 = brm(mpg_10 ~ hp_s,
@@ -37,12 +38,13 @@ fit1 = brm(mpg_10 ~ hp_s,
            file = "models/fit1.rds",
            file_refit = "on_change")
 
+
 # 6) plot the model
 conditional_effects(fit1)
 plot(conditional_effects(fit1), points = T)
 
 # 7) Fit an interaction model
-fit5 = brm(mpg_10 ~ hp_s*gear,  # interaction between hp and gear
+fit5 = brm(mpg_10 ~ 1 + hp_s*gear + (1|names),  # interaction between hp and gear
            data = dat_s,
            family = gaussian(),   # specify the likelihood
            chains = 2,
@@ -54,6 +56,10 @@ fit5 = brm(mpg_10 ~ hp_s*gear,  # interaction between hp and gear
 fit6 = update(fit5, newdata = dat_s,
               formula = . ~ hp_s*names)
 
+
+fit7 = update(fit5, newdata = dat_s,
+              formula = . ~ hp_s + (1 + hp_s|names)) # linear regression with varying intercept and varying slopes
+
 # 9) View prediction intervals
 conditional_effects(fit6, method = "predict")
 
@@ -61,6 +67,7 @@ conditional_effects(fit6, method = "predict")
 
 # mpg can't go below zero and is continuous, so a Gamma might be better.
 # Let's update the previous model using a Gamma likelihood with a log link
+
 fit2 = update(fit1, family = Gamma(link = "log"),
               file = "models/fit2.rds")
 
