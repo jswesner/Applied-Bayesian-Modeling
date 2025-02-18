@@ -40,6 +40,7 @@ mod_brm = brm(Petal.Length ~1 + Sepal.Length +
               data = iris)
 
 
+saveRDS(mod_brm, file = "models/mod_brm.rds")
 
 summary(mod_brm)
 iris_clean  = iris %>% clean_names()
