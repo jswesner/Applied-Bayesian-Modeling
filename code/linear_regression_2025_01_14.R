@@ -93,6 +93,7 @@ quantile(slope_diffs$diff_vs, probs = c(0.025, 0.5, 0.975))
 
 
 
+saveRDS(mod_brm, file = "models/mod_brm.rds")
 
 summary(mod_brm)
 iris_clean  = iris %>% clean_names()
